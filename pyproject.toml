@@ -1,0 +1,36 @@
+[project]
+name = "wetter-mcp-server"
+version = "0.1.0"
+description = "MCP-Server für Wetterprognosen über Open-Meteo (kein API-Key)"
+license = { text = "MIT" }
+authors = [{ name = "Jürgen Schilling" }]
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=3",
+    "httpx>=0.27",
+]
+
+[project.urls]
+Repository = "https://github.com/Schimmilab/wetter-mcp-server"
+
+[project.scripts]
+wetter-mcp = "wetter_mcp.server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wetter_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]

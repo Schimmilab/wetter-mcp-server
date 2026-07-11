@@ -1,4 +1,9 @@
-.env
+.idea/
 __pycache__/
-*.pyc
 .venv/
+*.egg-info/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+*.iml
