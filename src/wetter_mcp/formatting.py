@@ -62,3 +62,21 @@ def format_current(raw: dict, label: str) -> dict:
         "wind_kmh": cur.get("wind_speed_10m"),
         "wetter": describe_code(cur.get("weather_code")),
     }
+
+
+def format_hourly(raw: dict, label: str, hours: int) -> dict:
+    h = raw.get("hourly") or {}
+    times = h.get("time") or []
+    stunden = []
+    for i in range(min(hours, len(times))):
+        stunden.append(
+            {
+                "zeit": times[i],
+                "temperatur_c": _at(h, "temperature_2m", i),
+                "niederschlag_mm": _at(h, "precipitation", i),
+                "niederschlag_prob_pct": _at(h, "precipitation_probability", i),
+                "wind_kmh": _at(h, "wind_speed_10m", i),
+                "wetter": describe_code(_at(h, "weather_code", i)),
+            }
+        )
+    return {"ort": label, "stunden": stunden}
