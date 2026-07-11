@@ -43,9 +43,15 @@ async def geocode(name: str) -> dict:
     if not results:
         raise WeatherApiError(f"Ort '{name}' nicht gefunden.")
     top = results[0]
+    lat = top.get("latitude")
+    lon = top.get("longitude")
+    if lat is None or lon is None:
+        raise WeatherApiError(
+            f"Ort '{name}' ohne Koordinaten in der Geocoding-Antwort."
+        )
     parts = [top.get("name"), top.get("admin1"), top.get("country")]
     label = ", ".join(p for p in parts if p)
-    return {"lat": top["latitude"], "lon": top["longitude"], "label": label}
+    return {"lat": lat, "lon": lon, "label": label}
 
 
 async def fetch_forecast(

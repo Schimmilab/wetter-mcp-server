@@ -72,6 +72,48 @@ async def test_geocode_empty_results_raises():
 
 
 @respx.mock
+async def test_geocode_result_without_coordinates_raises():
+    respx.get(weather_client.GEOCODING_URL).mock(
+        return_value=httpx.Response(
+            200, json={"results": [{"name": "Nirgendwo"}]}
+        )
+    )
+    with pytest.raises(WeatherApiError, match="Koordinaten"):
+        await weather_client.geocode("Nirgendwo")
+
+
+@respx.mock
+async def test_geocode_label_skips_missing_parts():
+    respx.get(weather_client.GEOCODING_URL).mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "results": [
+                    {"name": "Reykjavik", "latitude": 64.15, "longitude": -21.94,
+                     "country": "Island"}
+                ]
+            },
+        )
+    )
+    geo = await weather_client.geocode("Reykjavik")
+    assert geo["label"] == "Reykjavik, Island"
+
+
+@respx.mock
+async def test_fetch_forecast_passes_daily_and_forecast_days():
+    route = respx.get(weather_client.FORECAST_URL).mock(
+        return_value=httpx.Response(200, json={"daily": {}})
+    )
+    await weather_client.fetch_forecast(
+        1.0, 2.0, daily=["temperature_2m_max"], forecast_days=5
+    )
+    params = route.calls.last.request.url.params
+    assert params["daily"] == "temperature_2m_max"
+    assert params["forecast_days"] == "5"
+    assert "hourly" not in params
+
+
+@respx.mock
 async def test_fetch_forecast_builds_params_and_returns_json():
     route = respx.get(weather_client.FORECAST_URL).mock(
         return_value=httpx.Response(200, json={"current": {"temperature_2m": 12.3}})
