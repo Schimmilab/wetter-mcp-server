@@ -28,3 +28,21 @@ async def _get(url: str, params: dict) -> dict:
             f"Wetterdienst lieferte keine gültige JSON-Antwort "
             f"(HTTP {response.status_code})."
         ) from exc
+
+
+async def geocode(name: str) -> dict:
+    """Ortsname → {'lat','lon','label'}. Label = 'Ort, Region, Land'.
+
+    Nimmt den ersten Treffer. Wirft WeatherApiError, wenn kein Ort gefunden wird.
+    """
+    data = await _get(
+        GEOCODING_URL,
+        {"name": name, "count": 1, "language": "de", "format": "json"},
+    )
+    results = data.get("results") or []
+    if not results:
+        raise WeatherApiError(f"Ort '{name}' nicht gefunden.")
+    top = results[0]
+    parts = [top.get("name"), top.get("admin1"), top.get("country")]
+    label = ", ".join(p for p in parts if p)
+    return {"lat": top["latitude"], "lon": top["longitude"], "label": label}
