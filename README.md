@@ -14,8 +14,11 @@ aufgelöst. Temperaturen in °C, Niederschlag in mm, Wind in km/h, Zeiten in Ort
 
 ## Standard-Ort ändern
 
-Optional über Umgebungsvariablen (siehe `.env.example`): `DEFAULT_LAT`,
-`DEFAULT_LON`, `DEFAULT_ORT`. Ohne diese nutzt der Server Steinenbronn.
+Optional über **Umgebungsvariablen** `DEFAULT_LAT`, `DEFAULT_LON`, `DEFAULT_ORT`
+— z.B. bei der Registrierung mit `claude mcp add … -e DEFAULT_LAT=…`. Die
+`.env`-Datei wird **nicht** automatisch geladen; `.env.example` listet nur die
+Variablennamen. Ohne diese Variablen nutzt der Server Steinenbronn (Ortsmitte,
+in `server.py` hinterlegt) — der Server läuft also ohne jede Konfiguration.
 
 ## Entwicklung
 
