@@ -80,3 +80,23 @@ def format_hourly(raw: dict, label: str, hours: int) -> dict:
             }
         )
     return {"ort": label, "stunden": stunden}
+
+
+def format_daily(raw: dict, label: str, days: int) -> dict:
+    d = raw.get("daily") or {}
+    times = d.get("time") or []
+    tage = []
+    for i in range(min(days, len(times))):
+        sun = _at(d, "sunshine_duration", i)
+        tage.append(
+            {
+                "datum": times[i],
+                "min_c": _at(d, "temperature_2m_min", i),
+                "max_c": _at(d, "temperature_2m_max", i),
+                "niederschlag_mm": _at(d, "precipitation_sum", i),
+                "niederschlag_prob_pct": _at(d, "precipitation_probability_max", i),
+                "sonnenstunden": round(sun / 3600, 1) if sun is not None else None,
+                "wetter": describe_code(_at(d, "weather_code", i)),
+            }
+        )
+    return {"ort": label, "tage": tage}

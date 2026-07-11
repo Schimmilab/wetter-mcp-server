@@ -80,3 +80,45 @@ def test_format_hourly_hours_exceeds_data():
     }
     out = formatting.format_hourly(raw, "X", hours=24)
     assert len(out["stunden"]) == 1
+
+
+def test_format_daily():
+    raw = {
+        "daily": {
+            "time": ["2026-07-11", "2026-07-12"],
+            "temperature_2m_max": [24.0, 22.0],
+            "temperature_2m_min": [13.0, 12.0],
+            "precipitation_sum": [0.0, 3.4],
+            "precipitation_probability_max": [5, 60],
+            "sunshine_duration": [36000, 18000],
+            "weather_code": [1, 63],
+        }
+    }
+    out = formatting.format_daily(raw, "Steinenbronn", days=7)
+    assert out["ort"] == "Steinenbronn"
+    assert len(out["tage"]) == 2
+    assert out["tage"][0] == {
+        "datum": "2026-07-11",
+        "min_c": 13.0,
+        "max_c": 24.0,
+        "niederschlag_mm": 0.0,
+        "niederschlag_prob_pct": 5,
+        "sonnenstunden": 10.0,
+        "wetter": "überwiegend klar",
+    }
+    assert out["tage"][1]["sonnenstunden"] == 5.0
+
+
+def test_format_daily_missing_sunshine():
+    raw = {
+        "daily": {
+            "time": ["2026-07-11"],
+            "temperature_2m_max": [24.0],
+            "temperature_2m_min": [13.0],
+            "precipitation_sum": [0.0],
+            "precipitation_probability_max": [5],
+            "weather_code": [1],
+        }
+    }
+    out = formatting.format_daily(raw, "X", days=7)
+    assert out["tage"][0]["sonnenstunden"] is None
