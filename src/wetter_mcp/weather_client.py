@@ -46,3 +46,36 @@ async def geocode(name: str) -> dict:
     parts = [top.get("name"), top.get("admin1"), top.get("country")]
     label = ", ".join(p for p in parts if p)
     return {"lat": top["latitude"], "lon": top["longitude"], "label": label}
+
+
+async def fetch_forecast(
+    lat: float,
+    lon: float,
+    *,
+    current: list[str] | None = None,
+    hourly: list[str] | None = None,
+    daily: list[str] | None = None,
+    forecast_hours: int | None = None,
+    forecast_days: int | None = None,
+) -> dict:
+    """Roh-JSON vom Open-Meteo-Forecast-Endpoint für die gegebenen Felder.
+
+    timezone=auto liefert Ortszeit (wichtig fürs Reisewetter). Wind in km/h.
+    """
+    params: dict = {
+        "latitude": lat,
+        "longitude": lon,
+        "timezone": "auto",
+        "wind_speed_unit": "kmh",
+    }
+    if current:
+        params["current"] = ",".join(current)
+    if hourly:
+        params["hourly"] = ",".join(hourly)
+    if daily:
+        params["daily"] = ",".join(daily)
+    if forecast_hours is not None:
+        params["forecast_hours"] = forecast_hours
+    if forecast_days is not None:
+        params["forecast_days"] = forecast_days
+    return await _get(FORECAST_URL, params)
