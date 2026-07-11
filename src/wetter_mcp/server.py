@@ -54,3 +54,47 @@ async def resolve_location(location: str | None) -> tuple[float, float, str]:
         return DEFAULT_LAT, DEFAULT_LON, DEFAULT_ORT
     geo = await weather_client.geocode(location.strip())
     return geo["lat"], geo["lon"], geo["label"]
+
+
+async def get_current_weather(location: str | None = None) -> dict:
+    """Aktuelles Wetter: Temperatur, gefühlte Temperatur, Luftfeuchte, Wind,
+    Bewölkung, aktueller Niederschlag. Ohne location = Zuhause (Steinenbronn)."""
+    lat, lon, label = await resolve_location(location)
+    raw = await weather_client.fetch_forecast(lat, lon, current=CURRENT_FIELDS)
+    return formatting.format_current(raw, label)
+
+
+async def get_hourly_forecast(location: str | None = None, hours: int = 24) -> dict:
+    """Stündliche Vorhersage: Temperatur, Regen (mm + Wahrscheinlichkeit), Wind,
+    Wetterlage. hours 1–48 (Standard 24). Ohne location = Zuhause.
+
+    Für 'kann ich die Fenster nachts offen lassen?' die Nachtstunden auf
+    Niederschlag und Minimaltemperatur prüfen."""
+    hours = max(1, min(hours, 48))
+    lat, lon, label = await resolve_location(location)
+    raw = await weather_client.fetch_forecast(
+        lat, lon, hourly=HOURLY_FIELDS, forecast_hours=hours
+    )
+    return formatting.format_hourly(raw, label, hours)
+
+
+async def get_daily_forecast(location: str | None = None, days: int = 7) -> dict:
+    """Tagesvorhersage: Min/Max-Temperatur, Regensumme + Wahrscheinlichkeit,
+    Sonnenstunden, Wetterlage. days 1–16 (Standard 7). Ohne location = Zuhause.
+
+    Für Reisewetter je Roadtrip-Station die location auf den jeweiligen Ort setzen."""
+    days = max(1, min(days, 16))
+    lat, lon, label = await resolve_location(location)
+    raw = await weather_client.fetch_forecast(
+        lat, lon, daily=DAILY_FIELDS, forecast_days=days
+    )
+    return formatting.format_daily(raw, label, days)
+
+
+mcp.tool(get_current_weather)
+mcp.tool(get_hourly_forecast)
+mcp.tool(get_daily_forecast)
+
+
+def main() -> None:
+    mcp.run()
