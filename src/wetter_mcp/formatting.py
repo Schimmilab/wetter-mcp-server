@@ -47,3 +47,18 @@ def _at(block: dict, key: str, i: int):
     if not arr or i >= len(arr):
         return None
     return arr[i]
+
+
+def format_current(raw: dict, label: str) -> dict:
+    cur = raw.get("current") or {}
+    return {
+        "ort": label,
+        "zeit": cur.get("time"),
+        "temperatur_c": cur.get("temperature_2m"),
+        "gefuehlt_c": cur.get("apparent_temperature"),
+        "luftfeuchte_pct": cur.get("relative_humidity_2m"),
+        "niederschlag_mm": cur.get("precipitation"),
+        "bewoelkung_pct": cur.get("cloud_cover"),
+        "wind_kmh": cur.get("wind_speed_10m"),
+        "wetter": describe_code(cur.get("weather_code")),
+    }
