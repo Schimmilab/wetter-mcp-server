@@ -82,6 +82,23 @@ def test_format_hourly_hours_exceeds_data():
     assert len(out["stunden"]) == 1
 
 
+def test_format_hourly_field_array_shorter_than_time():
+    raw = {
+        "hourly": {
+            "time": ["2026-07-11T18:00", "2026-07-11T19:00"],
+            "temperature_2m": [21.0],  # kürzer als time
+            "precipitation": [0.0, 0.5],
+            "precipitation_probability": [10, 40],
+            "wind_speed_10m": [9.0, 8.0],
+            "weather_code": [2, 61],
+        }
+    }
+    out = formatting.format_hourly(raw, "X", hours=2)
+    assert len(out["stunden"]) == 2
+    assert out["stunden"][1]["temperatur_c"] is None
+    assert out["stunden"][1]["niederschlag_mm"] == 0.5
+
+
 def test_format_daily():
     raw = {
         "daily": {

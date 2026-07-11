@@ -36,6 +36,7 @@ WEATHER_CODES: dict[int, str] = {
 
 
 def describe_code(code: int | None) -> str:
+    """WMO-Wettercode → deutsche Beschreibung; None/unbekannt sauber abgefangen."""
     if code is None:
         return "unbekannt"
     return WEATHER_CODES.get(code, f"Wettercode {code}")
@@ -50,6 +51,7 @@ def _at(block: dict, key: str, i: int):
 
 
 def format_current(raw: dict, label: str) -> dict:
+    """Aktueller-Wetter-Block → kompaktes Dict mit benannten Feldern + Ort."""
     cur = raw.get("current") or {}
     return {
         "ort": label,
@@ -65,6 +67,7 @@ def format_current(raw: dict, label: str) -> dict:
 
 
 def format_hourly(raw: dict, label: str, hours: int) -> dict:
+    """Stündlicher Block → bis zu `hours` Stunden-Dicts + Ort."""
     h = raw.get("hourly") or {}
     times = h.get("time") or []
     stunden = []
@@ -83,6 +86,7 @@ def format_hourly(raw: dict, label: str, hours: int) -> dict:
 
 
 def format_daily(raw: dict, label: str, days: int) -> dict:
+    """Täglicher Block → bis zu `days` Tages-Dicts + Ort (Sonne in Stunden)."""
     d = raw.get("daily") or {}
     times = d.get("time") or []
     tage = []
