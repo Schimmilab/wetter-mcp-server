@@ -123,3 +123,69 @@ async def test_get_daily_forecast_caps_days(monkeypatch):
 
 def test_main_is_callable():
     assert callable(server.main)
+
+
+async def test_get_current_weather_forwards_resolved_coordinates(monkeypatch):
+    async def fake_resolve(location):
+        return 46.5, 11.35, "Bozen, Südtirol, Italien"
+
+    captured = {}
+
+    async def fake_fetch(lat, lon, **kwargs):
+        captured["lat"] = lat
+        captured["lon"] = lon
+        return {"current": {"temperature_2m": 5.0, "weather_code": 0}}
+
+    monkeypatch.setattr(server, "resolve_location", fake_resolve)
+    monkeypatch.setattr(server.weather_client, "fetch_forecast", fake_fetch)
+    out = await server.get_current_weather("Bozen")
+    assert captured["lat"] == 46.5
+    assert captured["lon"] == 11.35
+    assert out["ort"] == "Bozen, Südtirol, Italien"
+
+
+async def test_tool_end_to_end_explicit_location_through_geocode(monkeypatch):
+    calls = {}
+
+    async def fake_geocode(name):
+        calls["name"] = name
+        return {"lat": 59.33, "lon": 18.07, "label": "Stockholm, Schweden"}
+
+    async def fake_fetch(lat, lon, **kwargs):
+        calls["lat"] = lat
+        calls["lon"] = lon
+        return {
+            "daily": {
+                "time": ["2026-07-11"],
+                "temperature_2m_max": [20.0],
+                "temperature_2m_min": [11.0],
+                "precipitation_sum": [0.0],
+                "precipitation_probability_max": [5],
+                "sunshine_duration": [36000],
+                "weather_code": [1],
+            }
+        }
+
+    monkeypatch.setattr(server.weather_client, "geocode", fake_geocode)
+    monkeypatch.setattr(server.weather_client, "fetch_forecast", fake_fetch)
+    out = await server.get_daily_forecast("  Stockholm  ", days=1)
+    assert calls["name"] == "Stockholm"          # .strip() angewendet
+    assert (calls["lat"], calls["lon"]) == (59.33, 18.07)   # geocodete Koordinaten durchgereicht
+    assert out["ort"] == "Stockholm, Schweden"
+    assert out["tage"][0]["max_c"] == 20.0
+
+
+async def test_get_daily_forecast_caps_days_low(monkeypatch):
+    captured = {}
+
+    async def fake_resolve(location):
+        return 1.0, 2.0, "X"
+
+    async def fake_fetch(lat, lon, **kwargs):
+        captured.update(kwargs)
+        return {"daily": {"time": []}}
+
+    monkeypatch.setattr(server, "resolve_location", fake_resolve)
+    monkeypatch.setattr(server.weather_client, "fetch_forecast", fake_fetch)
+    await server.get_daily_forecast(days=0)
+    assert captured["forecast_days"] == 1
