@@ -28,3 +28,8 @@ in `server.py` hinterlegt) — der Server läuft also ohne jede Konfiguration.
 ## Start
 
     uv run wetter-mcp
+
+## Maintainer
+
+Schimmi — https://schimmilab.de
+Issues und Pull Requests willkommen.
