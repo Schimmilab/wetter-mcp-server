@@ -6,7 +6,7 @@ license = { text = "MIT" }
 authors = [{ name = "Jürgen Schilling" }]
 requires-python = ">=3.11"
 dependencies = [
-    "fastmcp==3.4.4",
+    "fastmcp==3.4.5",
     "httpx==0.28.1",
 ]
 
