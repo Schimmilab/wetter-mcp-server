@@ -17,18 +17,13 @@ jobs:
       - run: uv run pytest
 
       # Smoke-Test: startet den Server wirklich und spricht das MCP-Protokoll
-      # (initialize -> initialized -> tools/list). Beantwortet die Frage, die
-      # pytest hier NICHT beantwortet: laeuft der Server nach einer
-      # Frischinstallation ueberhaupt?
-      #
-      # ANLASS: Am 30.07.2026 wurden sechs eigene MCP-Server auf ein neues SDK
-      # umgestellt und gemerged; am 31.07. waren fuenf davon tot. Die CI hatte
-      # nichts gemerkt, weil sie nur Tests laufen liess. Ein Server, dessen
-      # Tools in Dekoratoren registriert werden, laesst sich importieren, ohne
-      # zu starten - ein Import-Test ist deshalb zu schwach (Lernprotokoll 30.07.).
-      #
-      # --min-tools 3 statt 1: eine LEERE Tool-Liste ist die heimtueckischste
-      # Variante - Server laeuft, Handshake klappt, kann aber nichts. Ohne
-      # Untergrenze waere das ein bestandener Test.
-      - name: MCP-Smoke (Server startet und liefert Tools)
-        run: uv run python .github/scripts/mcp-smoke.py --min-tools 3 -- uv run wetter-mcp
+      # (initialize -> tools/list). pytest beantwortet nicht, ob der Server
+      # nach einer Frischinstallation ueberhaupt laeuft; ein Import-Test auch
+      # nicht, weil Tools in Dekoratoren registriert werden.
+      # Anlass: 30.07.2026 sechs Server aufs neue SDK umgestellt und gemerged,
+      # am 31.07. waren fuenf tot - die CI hatte nichts gemerkt.
+      - name: MCP-Smoke
+        uses: Schimmilab/mcp-smoke-action@v1
+        with:
+          command: uv run wetter-mcp
+          min-tools: "3"
